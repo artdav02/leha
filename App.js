@@ -5,6 +5,7 @@ import { Mulish_400Regular, Mulish_500Medium, Mulish_600SemiBold, Mulish_700Bold
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { ActivityIndicator } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const HomeHeader = () => {
   return (
@@ -181,6 +182,48 @@ const ItemScreen = ({ route, navigation }) => {
 const Stack = createStackNavigator();
 
 const App = () => {
+
+  const [userChoice, setUserChoice] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchChoice = async () => {
+      await AsyncStorage.clear(); // udoli
+      const choice = await AsyncStorage.getItem('userChoice');
+      setUserChoice(choice);
+      setLoading(false);
+      // backeck
+    };
+
+    fetchChoice();
+  }, []);
+
+  const saveChoice = async (choice) => {
+    await AsyncStorage.setItem('userChoice', choice);
+    setUserChoice(choice);
+  };
+
+  if (loading) {
+    return <ActivityIndicator size="large" />;
+  }
+
+  if (userChoice === null) {
+    return (
+        <View style={styles.all}>
+          <Text>Select an option:</Text>
+          <TouchableOpacity onPress={() => saveChoice('1')}>
+            <Text style={styles.optionsFirst}>Metal</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => saveChoice('2')}>
+            <Text style={styles.optionsFirst}>Wood</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => saveChoice('3')}>
+            <Text style={styles.optionsFirst}>Plastic</Text>
+          </TouchableOpacity>
+        </View>
+    );
+  }
+
   return (
       <NavigationContainer>
         <Stack.Navigator>
@@ -203,7 +246,8 @@ const styles = StyleSheet.create({
   all:{
     flex: 1,
     alignItems: 'center',
-    justifyContent: 'center'
+    justifyContent: 'center',
+    backgroundColor: 'black'
   },
   navbar: {
     width: '100%',
@@ -212,6 +256,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'flex-end',
     padding: 10,
+  },
+  optionsFirst : {
+    fontSize: 20,
+    textTransform: 'uppercase',
+    color: 'black',
+    fontFamily: 'Mulish_900Black',
+    padding: 10,
+    margin: 10,
+    backgroundColor: 'white',
+    width: 300,
+    textAlign: 'center',
   },
   header: {
     fontSize: 20,
